@@ -66,9 +66,6 @@ void del_node(rbtree *t, node_t *n){
 }
 
 void delete_rbtree(rbtree *t){
-  // TODO: reclaim the tree nodes's memory
-  // t만 지우지 말고 노드들도 지우세요
-  // arr처럼 하나하나 접근해서 삭제
   del_node(t, t->root);
   free(t->nil);
   free(t);
@@ -76,18 +73,15 @@ void delete_rbtree(rbtree *t){
 
 void RB_INSERT_FIXUP(rbtree *t, node_t *new_node){
   node_t *tmp;
-  // 부모가 black / 반복문 거치지 않고 root를 black으로 변경 후 함수 종료
   while (new_node->parent->color == RBTREE_RED){
     if (new_node->parent == new_node->parent->parent->left){
       tmp = new_node->parent->parent->right; // uncle 노드
 
       // case 1
-      // new_node, parent, uncle(tmp) 셋 다 RED이면
       if (tmp->color == RBTREE_RED){
         new_node->parent->color = RBTREE_BLACK;
         tmp->color = RBTREE_BLACK;
         new_node->parent->parent->color = RBTREE_RED;
-        // 조부모를 새로운 new_node로 두고 while루프 돌면서 색 바꿔줌
         new_node = new_node->parent->parent;
       }
       // case 2
@@ -162,19 +156,17 @@ return new_node;
 
 
 node_t *rbtree_find(const rbtree *t, const key_t key) {
-  node_t *tmp = t->root; // 돌아다니면서 찾음
-    // tmp(이동하는 거)가 맨 끝이 아니고 && 찾을 목표 key값도 아직 아니면 while
-    // 맨끝에 nil까지 가거나, 찾고자하는 key를 찾으면 종료
+  node_t *tmp = t->root; 
     while(tmp != t->nil && tmp->key != key) { 
-      if (tmp->key > key) { // 찾을 키값보다 지금 위치의 키값이 더 크면
-        tmp = tmp->left; // 더 작은 값을 찾아야하니까 왼쪽으로
+      if (tmp->key > key) { 
+        tmp = tmp->left; 
       }
       else{
         tmp = tmp->right;
       }
     }
     
-    if (tmp->key == key){ // 키값이 같을 때
+    if (tmp->key == key){ 
         return tmp;
         }
 
@@ -225,14 +217,11 @@ void RB_TRNASPLANT(rbtree *t, node_t *u, node_t *v){
 
 void RB_ERASE_FIXUP(rbtree *t, node_t *target){
   node_t *u;
-  // fix가 시작되는 조건
   while(target != t->root && target->color == RBTREE_BLACK){
-    //기준이되는 노드가 왼쪽일 때
     if(target->parent->left == target){
       u = target->parent->right;
       //case1: uncle is red
       if(u->color == RBTREE_RED){
-        //형제를 검은색으로 부모를 빨간색으로 칠한다. 부모노드를 기준으로 좌회전한다.
         u->color = RBTREE_BLACK;
         target->parent->color = RBTREE_RED;
         left_rotate(t, target->parent);
@@ -240,21 +229,18 @@ void RB_ERASE_FIXUP(rbtree *t, node_t *target){
       }
       //case2: uncle is black with two black child
       if(u->left->color == RBTREE_BLACK && u->right->color == RBTREE_BLACK){
-        //형제노드만 빨간색으로 만들고 타겟을 부모로 변경한다.
         u->color = RBTREE_RED;
         target = target->parent;
       }      
-      else { // 자식 중 최소 한개는 빨간색이다.
+      else { 
         //case3: uncle is black with red color left child and black color right child
         if(u->right->color == RBTREE_BLACK){
-        // 형제 노드를 빨간색으로, 형제 노드의 왼쪽 자식을 검은색으로 칠하고 형제노드를 기준으로 우회전한다.
           u->color = RBTREE_RED;
           u->left->color = RBTREE_BLACK;
           right_rotate(t, u);
           u = target->parent->right;
         }
         //case4: uncle is black with red color right child
-        // 부모 노드의 색을 형제에게 넘긴다. 부모노드와 형제 노드의 오른쪽 자식을 검은색으로 칠한다. 부모 노드 기준으로 좌회전한다.
         u->color = target->parent->color;
         target->parent->color = RBTREE_BLACK;
         u->right->color = RBTREE_BLACK;
@@ -262,12 +248,10 @@ void RB_ERASE_FIXUP(rbtree *t, node_t *target){
         target = t->root;
       }
     }
-    //기준이 되는 노드가 오른쪽 일때
     else{
       u = target->parent->left;
       //case1: uncle is red
       if(u->color == RBTREE_RED){
-        //형제를 검은색으로 부모를 빨간색으로 칠한다. 부모노드를 기준으로 좌회전한다.
         u->color = RBTREE_BLACK;
         target->parent->color = RBTREE_RED;
         right_rotate(t, target->parent);
@@ -275,21 +259,18 @@ void RB_ERASE_FIXUP(rbtree *t, node_t *target){
       }
       //case2: uncle is black with two black child
       if(u->right->color == RBTREE_BLACK && u->left->color == RBTREE_BLACK){
-        //형제노드만 빨간색으로 만들고 타겟을 부모로 변경한다.
         u->color = RBTREE_RED;
         target = target->parent;
       }      
-      else { // 자식 중 최소 한개는 빨간색이다.
+      else { 
         //case3: uncle is black with red color right child and black color left child
         if(u->left->color == RBTREE_BLACK){
-        // 형제 노드를 빨간색으로, 형제 노드의 왼쪽 자식을 검은색으로 칠하고 형제노드를 기준으로 우회전한다.
           u->color = RBTREE_RED;
           u->right->color = RBTREE_BLACK;
           left_rotate(t, u);
           u = target->parent->left;
         }
         //case4: uncle is black with red color left child
-        // 부모 노드의 색을 형제에게 넘긴다. 부모노드와 형제 노드의 오른쪽 자식을 검은색으로 칠한다. 부모 노드 기준으로 좌회전한다.
         u->color = target->parent->color;
         target->parent->color = RBTREE_BLACK;
         u->left->color = RBTREE_BLACK;
@@ -306,7 +287,7 @@ int rbtree_erase(rbtree *t, node_t *p) {
     return 0;
   }
   node_t *y= p;
-  node_t *ptr; // fixed_up의 기준이 될 노드
+  node_t *ptr;
   color_t y_original_color = p->color;
 
   // case1 : 왼쪽 노드가 nil일 때
@@ -321,14 +302,12 @@ int rbtree_erase(rbtree *t, node_t *p) {
   }
   // case3 : 왼쪽, 오른쪽 둘 다 노드일 때 (not nil)
   else {
-    // y는 p.r을 루트로 하는 서브 트리의 최소키를 가지는 노드
     y = node_min(t, p->right);
-    // ptr을 y->right로 바꿔주고 color를 위에서 찾은 y의 color로 변경시켜 준다.
     y_original_color = y->color;
     ptr = y->right;
     // case1 : p의 자식이 y일 때
     if (y->parent == p){
-      ptr->parent = y; // fixup 후 y가 nil이 됐을 수도 있는데 nil은 p를 가리킬 수 없으니 ptr가 부모를 알아야 하는 상황에서 알 수 없어서 정해줌
+      ptr->parent = y;
     }
     else {
       // 그 외 케이스 : y의 부모노드를 y->right와 연결시킨다.
